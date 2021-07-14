@@ -1,7 +1,7 @@
 # Python 2/3 compatibility imports
 from __future__ import print_function
 from six.moves import input
-
+import time
 import sys
 import copy
 import rospy
@@ -65,19 +65,21 @@ print("")
 ## We can plan a motion for this group to a desired pose for the
 ## end-effector:
 print("============ Moving to initial state ============")
-raw_input()
+# raw_input()
+# time.sleep(5)
 pose_goal = geometry_msgs.msg.Pose()
 # pose_goal.orientation.w = 0.707107
 # pose_goal.orientation.x = 0.707107
 # pose_goal.orientation.y = 0
 # pose_goal.orientation.z = 0
-pose_goal.orientation.w = 0.8660254
+pose_goal.orientation.w = 0.9063078
 pose_goal.orientation.x = 0
-pose_goal.orientation.y = -0.5
+pose_goal.orientation.y = -0.4226183
 pose_goal.orientation.z = 0
-pose_goal.position.x = 0.7
-pose_goal.position.y = -0.4
-pose_goal.position.z = 0.7
+pose_goal.position.x = 0.75
+pose_goal.position.y = -0.3
+pose_goal.position.z = 0.9
+
 
 move_group.set_pose_target(pose_goal)
 
@@ -89,12 +91,20 @@ plan = move_group.go(wait=True)
 # # Note: there is no equivalent function for clear_joint_value_targets()
 move_group.clear_pose_targets()
 
-raw_input()
+joint_goal = move_group.get_current_joint_values()
+joint_goal[6] = joint_goal[6]+1.57
+move_group.go(joint_goal,wait=True)
+move_group.stop()
+
 print("Gripper open")
+# raw_input()
+# time.sleep(5)
 rgripper.command(gripper_open,block=False)
 
-raw_input()
+
 print("Gripper approaching")
+# raw_input()
+time.sleep(5)
 # wpose = move_group.get_current_pose().pose
 # print(wpose)
 waypoints = []
@@ -105,8 +115,8 @@ waypoints = []
 wpose = move_group.get_current_pose().pose
 pose_temp = wpose
 for i in range(5):
-    pose_temp.position.x = wpose.position.x + i * 0.05
-    pose_temp.position.z = wpose.position.z + i * 0.05
+    pose_temp.position.x = wpose.position.x + i * 0.02
+    pose_temp.position.z = wpose.position.z + i * 0.03
     waypoints.append(copy.deepcopy(pose_temp))
 (plan, fraction) = move_group.compute_cartesian_path(
         waypoints, 0.01, 0.0  # waypoints to follow  # eef_step
@@ -114,35 +124,46 @@ for i in range(5):
 move_group.execute(plan, wait=True)
 
 
-raw_input()
+
+
 print("Gripper close")
+# raw_input()
+time.sleep(1)
 rgripper.command(gripper_closed,block=False)
 
-raw_input()
+# time.sleep(5)
 print("Rotate to unveil")
+# raw_input()
 waypoints_2 = []
 wpose_2 = move_group.get_current_pose().pose
 pose_temp_2 = wpose_2
+print(pose_temp_2)
+# raw_input()
+
 waypoints_2.append(copy.deepcopy(pose_temp_2))
 
 #intermediate pose_1
-pose_temp_2.orientation.y = -0.258819
-pose_temp_2.orientation.w = 0.9659258
-pose_temp_2.position.x = pose_temp_2.position.x - 0.03
-pose_temp_2.position.z = pose_temp_2.position.z +0.03
+pose_temp_2.orientation.x = 0
+pose_temp_2.orientation.y = 0
+pose_temp_2.orientation.z = 0
+pose_temp_2.orientation.w = 1
+pose_temp_2.position.x = pose_temp_2.position.x - 0.15
+pose_temp_2.position.z = pose_temp_2.position.z +0.15
 waypoints_2.append(copy.deepcopy(pose_temp_2))
 #intermediate pose_2
-pose_temp_2.orientation.y = 0
-pose_temp_2.orientation.w = 1
-pose_temp_2.position.x = pose_temp_2.position.x - 0.03
-pose_temp_2.position.z = pose_temp_2.position.z +0.03
+pose_temp_2.orientation.x = 0
+pose_temp_2.orientation.y = 0.258819
+pose_temp_2.orientation.z = 0
+pose_temp_2.orientation.w = 0.9659258
+pose_temp_2.position.x = pose_temp_2.position.x - 0.15
+pose_temp_2.position.z = pose_temp_2.position.z +0.15
 waypoints_2.append(copy.deepcopy(pose_temp_2))
 #intermediate pose_3
-pose_temp_2.orientation.y = 0.258819
-pose_temp_2.orientation.w = 0.9659258
-pose_temp_2.position.x = pose_temp_2.position.x - 0.03
-pose_temp_2.position.z = pose_temp_2.position.z +0.03
-waypoints_2.append(copy.deepcopy(pose_temp_2))
+# pose_temp_2.orientation.y = 0.258819
+# pose_temp_2.orientation.w = 0.9659258
+# pose_temp_2.position.x = pose_temp_2.position.x - 0.03
+# pose_temp_2.position.z = pose_temp_2.position.z +0.03
+# waypoints_2.append(copy.deepcopy(pose_temp_2))
 
 (plan, fraction) = move_group.compute_cartesian_path(
         waypoints_2, 0.01, 0.0  # waypoints to follow  # eef_step
